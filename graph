@@ -265,3 +265,81 @@ public:
 			mark[v] = val;
 	}
 };
+
+void DFS(GraphAdjList* graph, int v, vector<int> &order) {
+	graph->setMark(v, VISITED);
+	auto beginIte = order.begin();
+	order.insert(beginIte, v);
+	
+	for (int w=graph->first(v); w <= graph->vertices(); w = graph->next(v, w)) {
+		if (graph->getMark(w) == UNVISITED)
+			DFS(graph, w, order);
+	}
+}
+
+// Find min cost vertex
+int minVertex(GraphAdjList *G, int *D) {
+	int i, v = -1;
+
+	// Initialize v to some unvisited vertex
+	for (i=0; i<G->vertices(); i++) {
+		if (G->getMark(i) == UNVISITED) {
+			v = i;
+			break;
+		}
+	}
+
+	// Find smallest D value
+	for (i++; i<G->vertices(); i++) {
+		if ((G->getMark(i) == UNVISITED) && (D[i] < D[v]))
+			v = i;
+	}
+	
+	return v;
+}
+
+#define INFINITY 9999
+
+// Compute shortest path distance from "s"
+// Return these distance in "D"
+void Dijkstra(GraphAdjList *G, int *D, int s) {
+	int i, v, w;
+	for (i=0; i<G->vertices(); ++i) {
+		v = minVertex(G, D);
+		if (D[v] == INFINITY)
+			return;
+
+		G->setMark(v, VISITED);
+		for (w=G->first(v); w<G->vertices(); w=G->next(v, w))
+			if (D[w] > (D[v] + G->weight(v, w)))
+				D[w] = D[v] + G->weight(v, w);
+	}
+}
+
+void AddEdgetoMST(int v1, int v2) {
+	cout << "Add edge " << v1 << " to " << v2 << "\n";
+}
+
+void Prime(GraphAdjList *G, int *D, int s) {
+	int V[6];
+	int i, w;
+	
+	for (i=0; i<G->vertices(); ++i) {
+		int v = minVertex(G, D);
+		if (D[v] == INFINITY)
+			return;
+
+		G->setMark(v, VISITED);
+		cout << "set " << v << " mask" << endl;
+		if (v != s)
+			AddEdgetoMST(V[v], v);         // Add edge to MST
+
+		for (w=G->first(v); w<G->vertices(); w=G->next(v, w)) {
+			if (D[w] >  G->weight(v, w)) {
+				D[w] = G->weight(v, w);
+				V[w] = v;
+			}
+		}
+	}
+}
+
