@@ -1,0 +1,180 @@
+//////////////////////////////////////////////////////////////////////////
+// List (link list)
+
+template <typename E>
+class List {
+private:
+	void operator=(const List*) {}
+	List(const List&) {}
+
+public:
+	List() {}
+	virtual ~List() {}
+
+	virtual void clear() = 0;
+
+	virtual void insert(const E& item) = 0;
+	virtual void append(const E& item) = 0;
+
+	virtual E remove() = 0;
+
+	virtual void moveToStart() = 0;
+	virtual void moveToEnd() = 0;
+
+	virtual void prev() = 0;
+	virtual void next() = 0;
+
+	virtual int length() const = 0;
+
+	virtual int currentPos() const = 0;
+
+	virtual void moveToPos(int pos) = 0;
+
+	virtual const E& getValue() const = 0;
+};
+
+// Singly linked list node
+template <typename E>
+class Link {
+public:
+	E element;
+	Link *next;
+
+	Link(const E& elemVal, Link *nextVal = nullptr) {
+		element = elemVal;
+		next = nextVal;
+	}
+
+	Link(Link *nextVal = nullptr) {
+		next = nextVal;
+	}
+};
+
+template <typename E>
+class LList : public List<E> {
+private:
+	Link<E> *head;
+	Link<E> *tail;
+
+	// curr point the forward of current element.
+	//  [3|]-->[7|]-->[5|]-->[2|^]
+	//         curr
+	//  curr's element is 5.
+	Link<E> *curr;
+	int count;
+
+	void Init() {
+		head = tail = curr = new Link<E>();
+		count = 0;
+	}
+
+	void removeAll() {
+		while (head != nullptr) {
+			curr = head;
+			head = head->next;
+			delete curr;
+		}
+	}
+
+public:
+	LList() {
+		Init();
+	}
+	~LList() {
+		removeAll();
+	}
+
+	void clear() {
+		removeAll();
+		Init();
+	}
+
+	void insert(const E& item) {
+		curr->next = new Link<E>(item, curr->next);
+
+		// Update tail.
+		if (tail == curr)
+			tail = curr->next;
+
+		count++;
+	}
+
+	void append(const E& item) {
+		if (tail != nullptr) {
+			tail->next = new Link<E>(item, nullptr);
+			tail = tail->next;
+			count++;
+		}
+	}
+
+	E remove() {
+		if (curr->next == nullptr) 
+			return E();
+
+		Link<E> *temp = curr->next;
+		E it = curr->next->element;
+
+		if (tail == curr->next)
+			tail = curr;
+		curr->next = curr->next->next;
+		delete temp;
+		count--;
+
+		return it;
+	}
+
+	void moveToStart() {
+		curr = head;
+	}
+
+	void moveToEnd() {
+		curr = tail;
+	}
+
+	void prev() {
+		if (curr == head)
+			return;
+
+		Link<E> *temp = head;
+		while (temp->next != curr)
+			temp = temp->next;
+
+		curr = temp;
+	}
+
+	void next() {
+		if (curr != tail)
+			curr = curr->next;
+	}
+
+	int length() const {
+		return count;
+	}
+
+	int currentPos() const {
+		Link<E> *temp = head;
+		int pos;
+		for (pos = 0; curr != temp; ++pos)
+			temp = temp->next;
+
+		return pos;
+	}
+
+	void moveToPos(int pos) {
+		if (pos < 0 || pos > count)
+			return;
+
+		curr = head;
+		for (int i = 0; i < pos; ++i)
+			curr = curr->next;
+
+	}
+
+	E& getValue() const {
+		if (curr->next == nullptr) {
+			return E();
+		}
+
+		return curr->next->element;
+	}
+};
